@@ -37,15 +37,20 @@ class TrimKMeans:
 
     # replaced parameters countmode and printcrit with sklearns verbose level
     # replaced R's run and maxit Parameters with sklearns n_init and max_iter
-    def __init__(self, n_clusters=8, trim=0.1, scaling=False, n_init=100, max_iter=300, verbose=0):
+    def __init__(self, n_clusters=8, trim=0.1, scaling=False, n_init=100, max_iter=300, verbose=0, random_state=None):
         self.n_clusters = n_clusters
         self.trim = trim
         self.scaling = scaling
         self.n_init = n_init
         self.max_iter = max_iter
         self.verbose = verbose
+        self.random_state = random_state
 
     def fit(self, X_train):
+        if self.scaling:
+            X_train = StandardScaler().fit_transform(X_train)
+        if self.random_state:
+            random.seed(self.random_state)
         # Initialize the centroids, using the "k-means++" method, where a random datapoint is selected as the first,
         # then the rest are initialized w/ probabilities proportional to their distances to the first
         # Pick a random point from train data for first centroid
@@ -80,7 +85,6 @@ class TrimKMeans:
                     sorted_dists[idx] = points_and_dists[1]
                     sorted_points[idx] = points_and_dists[0]
             # trim the n points
-            print("trim: ", math.floor(self.trim * len(X_train)))
             for _ in range(0, math.floor(self.trim * len(X_train))):
                 # find the cluster with the max value
                 max_dist_cluster = np.argmax([last_or_inf(x) for x in sorted_dists])
@@ -91,7 +95,6 @@ class TrimKMeans:
             prev_centroids = self.centroids
             self.centroids = [np.mean(cluster, axis=0) for cluster in sorted_points]
             # safe the cutoff range which is the last point in a cluster not cut off
-            print(sorted_dists)
             self.cutoff_ranges = [last_or_inf(x) for x in sorted_dists]
             for i, centroid in enumerate(self.centroids):
                 if np.isnan(centroid).any():  # Catch any np.nans, resulting from a centroid having no points
