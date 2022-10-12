@@ -80,7 +80,9 @@ class TrimKMeans:
             for idx, cluster in enumerate(sorted_points):
                 if len(cluster) > 0:
                     # combine the lists, sort them based on distances and seperate them again
-                    points_and_dists = [[x, y] for y, x in sorted(zip(sorted_dists[idx], cluster))]
+                    # sort based on the first element of the tuple which is the distance
+                    points_and_dists = [[x, y] for y, x in
+                                        sorted(zip(sorted_dists[idx], cluster), key=lambda point: point[0])]
                     points_and_dists = list(zip(*points_and_dists))
                     sorted_dists[idx] = points_and_dists[1]
                     sorted_points[idx] = points_and_dists[0]
@@ -109,7 +111,7 @@ class TrimKMeans:
             centroid_idx = np.argmin(dists)
             # centroids.append(self.centroids[centroid_idx])
             # check if distance is smaller than cutoff of that cluster
-            # if not, label k is given
+            # if not, label n_clusters is given
             if self.cutoff_ranges[centroid_idx] < dists[centroid_idx]:
                 centroid_idxs.append(self.n_clusters)
             else:
