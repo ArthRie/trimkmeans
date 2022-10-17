@@ -17,6 +17,9 @@ jobs:
     - name: Install dependencies
       run: |
         pip install pylint
+    - name: Create .pylintrc to add custom options
+      run: |
+        echo - e '[FORMAT]\nmax-line-length=120' > .pylintrc
     - name: Analysing the code with pylint
       run: |
         pylint $(git ls-files '*.py')
