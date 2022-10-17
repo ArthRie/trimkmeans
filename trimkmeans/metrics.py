@@ -1,3 +1,8 @@
+"""
+Metrics for the trimkmeans algorithm
+These are wrapper functions that remove the trimmed cluster marked by the highest label integer
+"""
+
 from sklearn import metrics
 
 
@@ -39,6 +44,6 @@ def trimmed_kmeans_metric_supervised(true_labels, labels, metric):
     true_label_removed_trimmed, classification_removed_trimmed = list(zip(*removed_trimmed))
     if metric == 'rand_score':
         return metrics.rand_score(true_label_removed_trimmed, classification_removed_trimmed)
-    elif metric == 'completeness_score':
+    else:
         return metrics.completeness_score(true_label_removed_trimmed, classification_removed_trimmed)
     raise ValueError("metric must be either 'rand_score' or 'completeness_score'")

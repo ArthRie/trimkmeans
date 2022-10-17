@@ -116,9 +116,9 @@ class TrimKMeans:
                 # safe the cutoff range which is the last point in a cluster not cut off
                 self.opt_cutoff_ranges = [None] * self.n_clusters
                 while any(x is None for x in self.opt_cutoff_ranges):
-                    cp = heapq.heappop(sorted_points)
-                    if not self.opt_cutoff_ranges[cp.cluster]:
-                        self.opt_cutoff_ranges[cp.cluster] = cp.dist
+                    c_p = heapq.heappop(sorted_points)
+                    if not self.opt_cutoff_ranges[c_p.cluster]:
+                        self.opt_cutoff_ranges[c_p.cluster] = c_p.dist
                 self.crit_val = new_crit_val
                 self.cluster_centers_ = centroids
 
