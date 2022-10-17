@@ -1,8 +1,8 @@
-'''
+"""
 the example in R is a single function which takes an object of class 'tkm' as a parameter
 to be more in line with the KMeans implementation in Pythons SKlearn library the following implementation
 is realized as a class
-'''
+"""
 import heapq
 import random
 from math import inf, floor
@@ -20,6 +20,13 @@ def euclidean(point, data):
 
 
 class TrimKMeans:
+    """
+    Optimizes the k-means algorithm by trimming a portion of the points.
+    The implementation follows the algorithm of the r package but is modeled after the scikit-learn
+    kmeans clustering code.
+    The centroids are initialized using the "k-means++" method, where a random datapoint is selected as the first,
+    then the rest are initialized with probabilities proportional to their distances to the first
+    """
 
     # replaced parameters countmode and printcrit with sklearns verbose level
     # replaced R's run and maxit Parameters with sklearns n_init and max_iter
@@ -36,6 +43,10 @@ class TrimKMeans:
         self.crit_val = -1 * inf
 
     class ClusterPoint:
+        """
+        Inner Class used to group points together with the distance and cluster that was calculated by the algorithm
+        """
+
         def __init__(self, points):
             self.points = points
             self.cluster = None
@@ -50,18 +61,19 @@ class TrimKMeans:
             return f"Cluster: {self.cluster}, Distance: {self.dist}"
 
     def fit(self, x_train):
+        """computes trimmed k means clustering
+        :param x_train: list of datapoints
+        """
         if self.scaling:
             x_train = StandardScaler().fit_transform(x_train)
         if self.random_state:
             random.seed(self.random_state)
         for run in range(self.n_init):
-            # Initialize the centroids, using the "k-means++" method, where a random datapoint is selected as the first,
-            # then the rest are initialized w/ probabilities proportional to their distances to the first
             # Pick a random point from train data for first centroid
             centroids = [random.choice(x_train)]
             for _ in range(self.n_clusters - 1):
                 # Calculate distances from points to the centroids
-                dists = np.sum([euclidean(centroid, x_train) for centroid in centroids], axis=0)
+                dists = np.sum((euclidean(centroid, x_train) for centroid in centroids), axis=0)
                 # Normalize the distances
                 dists /= np.sum(dists)
                 # Choose remaining points based on their distances
@@ -77,13 +89,13 @@ class TrimKMeans:
                 sorted_points = []
                 # Sort each datapoint, assigning to nearest centroid
                 for x in x_train:
-                    cp = self.ClusterPoint(points=x)
+                    c_p = self.ClusterPoint(points=x)
                     # save the distance for each point for trimming later
                     # distance is negated because heapq is implemented as a min stack
                     dists = -1 * euclidean(x, centroids)
-                    cp.dist = max(dists)
-                    cp.cluster = np.argmax(dists)
-                    heapq.heappush(sorted_points, cp)
+                    c_p.dist = max(dists)
+                    c_p.cluster = np.argmax(dists)
+                    heapq.heappush(sorted_points, c_p)
 
                 # trim the n points
                 _ = [heapq.heappop(sorted_points) for _ in range(0, floor(self.trim * len(x_train)))]
@@ -91,13 +103,13 @@ class TrimKMeans:
                 # copy list by value[:]
                 prev_centroids = centroids[:]
                 for i in range(self.n_clusters):
-                    centroids[i] = np.mean([cp.points for cp in sorted_points if cp.cluster == i], axis=0)
+                    centroids[i] = np.mean([c_p.points for c_p in sorted_points if c_p.cluster == i], axis=0)
                 for i, centroid in enumerate(centroids):
                     if np.isnan(centroid).any():  # Catch any np.nans, resulting from a centroid having no points
                         centroids[i] = prev_centroids[i]
                 iteration += 1
             # calculate the sum of all the distances
-            new_crit_val = sum([cp.dist for cp in sorted_points])
+            new_crit_val = sum((c_p.dist for c_p in sorted_points))
             if self.verbose >= 1:
                 print(f"Iteration {run} criterion value {new_crit_val}")
             if new_crit_val > self.crit_val:

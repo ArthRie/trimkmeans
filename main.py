@@ -1,3 +1,6 @@
+"""
+Example run and visualization for the trimkmeans class
+"""
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.datasets import make_blobs
