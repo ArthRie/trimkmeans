@@ -60,6 +60,49 @@ class TrimKMeans:
         def __repr__(self):
             return f"Cluster: {self.cluster}, Distance: {self.dist}"
 
+    def __create_points(self, x_train, centroids):
+        """
+        Inner function used to group the transformation of raw point data to instances of inner class ClusterPoint
+        :param x_train: list of datapoints
+        :param centroids: centers of kmeans cluster
+        :return: heapq of sorted ClusterPoint instances
+        """
+        sorted_points = []
+        # Sort each datapoint, assigning to nearest centroid
+        for x in x_train:
+            c_p = self.ClusterPoint(points=x)
+            # save the distance for each point for trimming later
+            # distance is negated because heapq is implemented as a min stack
+            dists = -1 * euclidean(x, centroids)
+            c_p.dist = max(dists)
+            c_p.cluster = np.argmax(dists)
+            heapq.heappush(sorted_points, c_p)
+
+        # trim the n points
+        _ = [heapq.heappop(sorted_points) for _ in range(0, floor(self.trim * len(x_train)))]
+        return sorted_points
+
+    def __compare_iterations(self, sorted_points, centroids, run):
+        """
+        Encapsulates the comparison between the different results of two iterations of trimmed_kmeans
+        :param sorted_points: heapq of ClusterPoints
+        :param centroids: centroids of the clusters
+        :param run: number of iteration for verbose printing
+        """
+        # calculate the sum of all the distances
+        new_crit_val = sum((c_p.dist for c_p in sorted_points))
+        if self.verbose >= 1:
+            print(f"Iteration {run} criterion value {new_crit_val}")
+        if new_crit_val > self.crit_val:
+            # safe the cutoff range which is the last point in a cluster not cut off
+            self.opt_cutoff_ranges = [None] * self.n_clusters
+            while any(x is None for x in self.opt_cutoff_ranges):
+                c_p = heapq.heappop(sorted_points)
+                if not self.opt_cutoff_ranges[c_p.cluster]:
+                    self.opt_cutoff_ranges[c_p.cluster] = c_p.dist
+            self.crit_val = new_crit_val
+            self.cluster_centers_ = centroids
+
     def fit(self, x_train):
         """computes trimmed k means clustering
         :param x_train: list of datapoints
@@ -86,19 +129,7 @@ class TrimKMeans:
             sorted_points = []
             while np.not_equal(centroids, prev_centroids).any() and iteration < self.max_iter:
 
-                sorted_points = []
-                # Sort each datapoint, assigning to nearest centroid
-                for x in x_train:
-                    c_p = self.ClusterPoint(points=x)
-                    # save the distance for each point for trimming later
-                    # distance is negated because heapq is implemented as a min stack
-                    dists = -1 * euclidean(x, centroids)
-                    c_p.dist = max(dists)
-                    c_p.cluster = np.argmax(dists)
-                    heapq.heappush(sorted_points, c_p)
-
-                # trim the n points
-                _ = [heapq.heappop(sorted_points) for _ in range(0, floor(self.trim * len(x_train)))]
+                sorted_points = self.__create_points(x_train, centroids)
                 # Push current centroids to previous, reassign centroids as mean of the points belonging to them
                 # copy list by value[:]
                 prev_centroids = centroids[:]
@@ -108,19 +139,8 @@ class TrimKMeans:
                     if np.isnan(centroid).any():  # Catch any np.nans, resulting from a centroid having no points
                         centroids[i] = prev_centroids[i]
                 iteration += 1
-            # calculate the sum of all the distances
-            new_crit_val = sum((c_p.dist for c_p in sorted_points))
-            if self.verbose >= 1:
-                print(f"Iteration {run} criterion value {new_crit_val}")
-            if new_crit_val > self.crit_val:
-                # safe the cutoff range which is the last point in a cluster not cut off
-                self.opt_cutoff_ranges = [None] * self.n_clusters
-                while any(x is None for x in self.opt_cutoff_ranges):
-                    c_p = heapq.heappop(sorted_points)
-                    if not self.opt_cutoff_ranges[c_p.cluster]:
-                        self.opt_cutoff_ranges[c_p.cluster] = c_p.dist
-                self.crit_val = new_crit_val
-                self.cluster_centers_ = centroids
+
+            self.__compare_iterations(sorted_points, centroids, run)
 
     def predict(self, X):
         """
