@@ -44,6 +44,6 @@ def trimmed_kmeans_metric_supervised(true_labels, labels, metric):
     true_label_removed_trimmed, classification_removed_trimmed = list(zip(*removed_trimmed))
     if metric == 'rand_score':
         return metrics.rand_score(true_label_removed_trimmed, classification_removed_trimmed)
-    else:
+    if metric == 'completeness_score':
         return metrics.completeness_score(true_label_removed_trimmed, classification_removed_trimmed)
     raise ValueError("metric must be either 'rand_score' or 'completeness_score'")
