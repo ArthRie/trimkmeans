@@ -1,3 +1,6 @@
+"""
+unittests which are automatically run on push by pytest
+"""
 import heapq
 import unittest
 
@@ -6,10 +9,6 @@ import numpy as np
 from trimkmeans.metrics import trimmed_kmeans_metric_supervised
 from trimkmeans.metrics import trimmed_kmeans_metric_unsupervised
 from trimkmeans.trimkmeans import TrimKMeans
-
-"""
-unittests which are automatically run on push by pytest
-"""
 
 
 class TestingTrimKMeans(unittest.TestCase):

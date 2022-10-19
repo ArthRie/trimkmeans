@@ -5,6 +5,7 @@ is realized as a class
 """
 import heapq
 import random
+import warnings
 from math import inf, floor
 
 import numpy as np
@@ -16,7 +17,9 @@ def euclidean(point, data):
     Euclidean distance between point & data.
     Point has dimensions (m,), data has dimensions (n,m), and output will be of size (n,).
     """
-    return np.sqrt(np.sum((point - data) ** 2, axis=1))
+    # list conversation to prevent deprecation warning Calling np.sum(generator) is deprecated
+    gen = list((point - data) ** 2)
+    return np.sqrt(np.sum(gen, axis=1))
 
 
 class TrimKMeans:
@@ -165,7 +168,11 @@ class TrimKMeans:
                 # copy list by value[:]
                 prev_centroids = centroids[:]
                 for i in range(self.n_clusters):
-                    centroids[i] = np.mean([c_p.points for c_p in sorted_points if c_p.cluster == i], axis=0)
+                    with warnings.catch_warnings():
+                        # clusters can be empty, the corresponding RuntimeWarning is suppressed here
+                        # to prevent screen clutter
+                        warnings.filterwarnings('ignore', category=RuntimeWarning)
+                        centroids[i] = np.mean([c_p.points for c_p in sorted_points if c_p.cluster == i], axis=0)
                 for i, centroid in enumerate(centroids):
                     if np.isnan(centroid).any():  # Catch any np.nans, resulting from a centroid having no points
                         centroids[i] = prev_centroids[i]
