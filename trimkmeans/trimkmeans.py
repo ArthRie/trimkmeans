@@ -58,7 +58,13 @@ class TrimKMeans:
 
         # for debugging
         def __repr__(self):
-            return f"Cluster: {self.cluster}, Distance: {self.dist}"
+            return f"Point: {self.points}, Cluster: {self.cluster}, Distance: {self.dist}"
+
+        # for testing
+        def __eq__(self, cp2):
+            if self.cluster == cp2.cluster and self.dist == cp2.dist:
+                return np.array_equal(self.points, cp2.points)
+            return False
 
     def __create_points(self, x_train, centroids):
         """
@@ -103,10 +109,35 @@ class TrimKMeans:
             self.crit_val = new_crit_val
             self.cluster_centers_ = centroids
 
+    def __check_data(self, data):
+        """
+        throws ValueError if the input data has the wrong shape
+        :param self:
+        :param data: list of data points to fit the trimmed kmeans to
+        :return:
+        """
+        # If input is scalar raise error
+        if len(data) == 0:
+            raise ValueError(
+                "Expected 2D array, array is empty"
+            )
+        # If input is 1D raise error
+        if len(data[0]) == 0:
+            raise ValueError(
+                "Expected 2D array, got 1D array instead"
+            )
+        # If input n_rows is smaller than n_cluster raise Error
+        trimmed_len = len(data) - floor(self.trim * len(data))
+        if trimmed_len < self.n_clusters:
+            raise ValueError(
+                f"n_samples-trim={trimmed_len} should be >= n_clusters={self.n_clusters}."
+            )
+
     def fit(self, x_train):
         """computes trimmed k means clustering
         :param x_train: list of datapoints
         """
+        self.__check_data(x_train)
         if self.scaling:
             x_train = StandardScaler().fit_transform(x_train)
         if self.random_state:
