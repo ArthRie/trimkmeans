@@ -23,7 +23,7 @@ jobs:
         echo -e "[FORMAT]\nmax-line-length=120" > .pylintrc
     - name: Analysing the code with pylint
       run: |
-        pylint $(git ls-files '*.py')
+        pylint --fail-under=8 $(git ls-files '*.py') 
     - name: Test with pytest
       run: |
         pytest tests.py
