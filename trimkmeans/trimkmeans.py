@@ -105,7 +105,9 @@ class TrimKMeans:
         if new_crit_val > self.crit_val:
             # safe the cutoff range which is the last point in a cluster not cut off
             self.opt_cutoff_ranges = [None] * self.n_clusters
-            while any(x is None for x in self.opt_cutoff_ranges):
+            # self.opt_cutoff_ranges is empty for each cluster until a mathching entry is poped
+            # if there is no entry in a cluster the entire list will be poped
+            while any(x is None for x in self.opt_cutoff_ranges) and len(sorted_points) > 0:
                 c_p = heapq.heappop(sorted_points)
                 if not self.opt_cutoff_ranges[c_p.cluster]:
                     self.opt_cutoff_ranges[c_p.cluster] = c_p.dist
@@ -150,7 +152,7 @@ class TrimKMeans:
             centroids = [random.choice(x_train)]
             for _ in range(self.n_clusters - 1):
                 # Calculate distances from points to the centroids
-                dists = np.sum((euclidean(centroid, x_train) for centroid in centroids), axis=0)
+                dists = sum((euclidean(centroid, x_train) for centroid in centroids))
                 # Normalize the distances
                 dists /= np.sum(dists)
                 # Choose remaining points based on their distances
