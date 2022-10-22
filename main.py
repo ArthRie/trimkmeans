@@ -9,6 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from trimkmeans.trimkmeans import TrimKMeans
 
 if __name__ == "__main__":
+
     # Create a dataset of 2D distributions
     CENTERS = 5
     X_train, true_labels = make_blobs(n_samples=100, centers=CENTERS, random_state=42)

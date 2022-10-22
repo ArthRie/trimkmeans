@@ -33,7 +33,15 @@ class TrimKMeans:
 
     # replaced parameters countmode and printcrit with sklearns verbose level
     # replaced R's run and maxit Parameters with sklearns n_init and max_iter
-    def __init__(self, n_clusters=8, trim=0.1, scaling=False, n_init=10, max_iter=300, verbose=0, random_state=None):
+    def __init__(self,
+                 n_clusters=8,
+                 trim=0.1,
+                 scaling=False,
+                 n_init=10,
+                 max_iter=100,
+                 verbose=0,
+                 random_state=None,
+                 init='k-means++'):
         self.n_clusters = n_clusters
         self.trim = trim
         self.scaling = scaling
@@ -44,6 +52,7 @@ class TrimKMeans:
         self.opt_cutoff_ranges = None
         self.cluster_centers_ = None
         self.crit_val = -1 * inf
+        self.init = init
 
     class ClusterPoint:
         """
@@ -91,6 +100,20 @@ class TrimKMeans:
         _ = [heapq.heappop(sorted_points) for _ in range(0, floor(self.trim * len(x_train)))]
         return sorted_points
 
+    def __calculate_cutoff(self, sorted_points):
+        """
+        # set the member variable cutoff range which is the last point in a cluster not cut off
+        :param sorted_points: result of the __create_points() method
+        :return:
+        """
+        self.opt_cutoff_ranges = [None] * self.n_clusters
+        # self.opt_cutoff_ranges is empty for each cluster until a matching entry is popd
+        # if there is no entry in a cluster the entire list will be popd
+        while any(x is None for x in self.opt_cutoff_ranges) and len(sorted_points) > 0:
+            c_p = heapq.heappop(sorted_points)
+            if not self.opt_cutoff_ranges[c_p.cluster]:
+                self.opt_cutoff_ranges[c_p.cluster] = c_p.dist
+
     def __compare_iterations(self, sorted_points, centroids, run):
         """
         Encapsulates the comparison between the different results of two iterations of trimmed_kmeans
@@ -103,14 +126,7 @@ class TrimKMeans:
         if self.verbose >= 1:
             print(f"Iteration {run} criterion value {new_crit_val}")
         if new_crit_val > self.crit_val:
-            # safe the cutoff range which is the last point in a cluster not cut off
-            self.opt_cutoff_ranges = [None] * self.n_clusters
-            # self.opt_cutoff_ranges is empty for each cluster until a mathching entry is poped
-            # if there is no entry in a cluster the entire list will be poped
-            while any(x is None for x in self.opt_cutoff_ranges) and len(sorted_points) > 0:
-                c_p = heapq.heappop(sorted_points)
-                if not self.opt_cutoff_ranges[c_p.cluster]:
-                    self.opt_cutoff_ranges[c_p.cluster] = c_p.dist
+            self.__calculate_cutoff(sorted_points)
             self.crit_val = new_crit_val
             self.cluster_centers_ = centroids
 
@@ -140,6 +156,7 @@ class TrimKMeans:
 
     def fit(self, x_train):
         """computes trimmed k means clustering
+        https://towardsdatascience.com/create-your-own-k-means-clustering-algorithm-in-python-d7d4c9077670
         :param x_train: list of datapoints
         """
         self.__check_data(x_train)
@@ -147,17 +164,34 @@ class TrimKMeans:
             x_train = StandardScaler().fit_transform(x_train)
         if self.random_state:
             random.seed(self.random_state)
+
         for run in range(self.n_init):
-            # Pick a random point from train data for first centroid
-            centroids = [random.choice(x_train)]
-            for _ in range(self.n_clusters - 1):
-                # Calculate distances from points to the centroids
-                dists = sum((euclidean(centroid, x_train) for centroid in centroids))
-                # Normalize the distances
-                dists /= np.sum(dists)
-                # Choose remaining points based on their distances
-                new_centroid_idx, = np.random.choice(range(len(x_train)), size=1, p=dists)
-                centroids += [x_train[new_centroid_idx]]
+            if isinstance(self.init, str) and self.init == "k-means++":
+                # Pick a random point from train data for first centroid
+                centroids = [random.choice(x_train)]
+                for _ in range(self.n_clusters - 1):
+                    # Calculate distances from points to the centroids
+                    dists = sum((euclidean(centroid, x_train) for centroid in centroids))
+                    # Normalize the distances
+                    dists /= np.sum(dists)
+                    # Choose remaining points based on their distances
+                    new_centroid_idx, = np.random.choice(range(len(x_train)), size=1, p=dists)
+                    centroids += [x_train[new_centroid_idx]]
+            elif isinstance(self.init, str) and self.init == "random":
+                # Randomly select centroid start points, uniformly distributed across the domain of the dataset
+                min_point, max_point = np.min(x_train, axis=0), np.max(x_train, axis=0)
+                centroids = [np.random.uniform(min_point, max_point) for _ in range(self.n_clusters)]
+            elif isinstance(self.init, str):
+                raise ValueError(f"{self.init} is not a recognized method, try 'k-means++', 'random' or passing"
+                                 f"an inital centroid ndarray")
+            else:
+                # calculation for set centroids, only one iteration
+                # the r documentation warns that the same centroids will be used over and over if runs > 1
+                # however I don't think the implementation actually works like this
+                # if self.n_init > 1:
+                #   warnings.warn("If initial mean vectors are specified, only one run will be calculated")
+                centroids = self.init
+
             # Iterate, adjusting centroids until converged or until passed max_iter
             iteration = 0
             prev_centroids = None

@@ -61,6 +61,19 @@ class TestingTrimKMeans(unittest.TestCase):
         except RuntimeError:
             self.fail("fit() with one dimensional data failed")
 
+    def test_init_with_centroids(self):
+        """
+        Tests if fit() method works as expected if points are provided via the init parameter
+        :return: None
+        """
+        trimkmeans = TrimKMeans(n_clusters=3, trim=0.3, n_init=1, init=np.array([[0., 1.], [1., 2.], [2., 3.]]))
+        testdata = np.array([[0., 1.], [1., 2.], [2., 3.], [3., 4.]])
+        try:
+            trimkmeans.fit(testdata)
+            trimkmeans.predict(testdata)
+        except RuntimeError:
+            self.fail("fit() with init centroids failed")
+
     def less_points_then_cluster(self):
         """
         Tests if a size error is raised which stems from a dataset with fewer points than clusters spezified
