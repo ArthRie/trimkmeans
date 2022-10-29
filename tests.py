@@ -74,12 +74,12 @@ class TestingTrimKMeans(unittest.TestCase):
         except RuntimeError:
             self.fail("fit() with init centroids failed")
 
-    def less_points_then_cluster(self):
+    def test_less_points_then_cluster(self):
         """
         Tests if a size error is raised which stems from a dataset with fewer points than clusters spezified
         :return: None
         """
-        trimkmeans = TrimKMeans(n_clusters=3)
+        trimkmeans = TrimKMeans(n_clusters=4)
         testdata = np.array([[1], [2], [3]])
         with self.assertRaises(ValueError):
             trimkmeans.fit(testdata)
