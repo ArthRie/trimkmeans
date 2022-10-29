@@ -6,6 +6,7 @@ import seaborn as sns
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 
+from trimkmeans.metrics import trimmed_kmeans_metric_unsupervised
 from trimkmeans.trimkmeans import TrimKMeans
 
 if __name__ == "__main__":
@@ -20,6 +21,8 @@ if __name__ == "__main__":
     # View results
     labels = trimkmeans.predict(X_train)
     print(f"optimal criterion value found is: {trimkmeans.crit_val}")
+    print(f"sum of variances is: {trimmed_kmeans_metric_unsupervised(X_train, labels, 'sv')}")
+    print(f"sum of standart deviations is : {trimmed_kmeans_metric_unsupervised(X_train, labels, 'sed')}")
     sns.scatterplot(x=[X[0] for X in X_train],
                     y=[X[1] for X in X_train],
                     hue=labels,

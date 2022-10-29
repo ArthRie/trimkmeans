@@ -9,6 +9,9 @@ import os
 import unittest
 
 import numpy as np
+from sklearn.datasets import make_blobs
+
+from trimkmeans.trimkmeans import TrimKMeans
 
 # run this line before importing any rpy2 modules
 os.environ["R_HOME"] = r"C:\Program Files\R\R-4.2.1"  # change as needed
@@ -22,10 +25,6 @@ from rpy2.robjects.conversion import localconverter
 # run this line before importing any rpy2 modules
 os.environ["R_HOME"] = r"C:\Program Files\R\R-4.2.1"  # change as needed
 from rpy2.robjects.packages import importr
-# R vector of strings
-from sklearn.datasets import make_blobs
-
-from trimkmeans.trimkmeans import TrimKMeans
 
 
 class LocalTests(unittest.TestCase):
