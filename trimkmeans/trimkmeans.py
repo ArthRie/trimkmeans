@@ -3,7 +3,6 @@ the example in R is a single function which takes an object of class 'tkm' as a 
 to be more in line with the KMeans implementation in Pythons SKlearn library the following implementation
 is realized as a class
 """
-import heapq
 import random
 import warnings
 from math import inf, floor
@@ -59,7 +58,8 @@ class TrimKMeans:
         Inner Class used to group points together with the distance and cluster that was calculated by the algorithm
         """
 
-        def __init__(self, points):
+        # legacy constructor left here for testing
+        def __init__(self, points=None):
             self.points = points
             self.cluster = None
             self.dist = None
@@ -85,19 +85,21 @@ class TrimKMeans:
         :param centroids: centers of kmeans cluster
         :return: heapq of sorted ClusterPoint instances
         """
-        sorted_points = []
+        sorted_points = np.array([self.ClusterPoint() for _ in range(len(x_train))])
         # Sort each datapoint, assigning to nearest centroid
-        for x in x_train:
-            c_p = self.ClusterPoint(points=x)
+        for idx, val in enumerate(x_train):
+            sorted_points[idx].points = val
             # save the distance for each point for trimming later
             # distance is negated because heapq is implemented as a min stack
-            dists = -1 * euclidean(x, centroids)
-            c_p.dist = max(dists)
-            c_p.cluster = np.argmax(dists)
-            heapq.heappush(sorted_points, c_p)
+            dists = -1 * euclidean(val, centroids)
+            sorted_points[idx].dist = max(dists)
+            sorted_points[idx].cluster = np.argmax(dists)
 
         # trim the n points
-        _ = [heapq.heappop(sorted_points) for _ in range(0, floor(self.trim * len(x_train)))]
+        sorted_points.sort()
+        for x in range(0, floor(self.trim * len(sorted_points))):
+            sorted_points[x].cluster = len(centroids)
+
         return sorted_points
 
     def __calculate_cutoff(self, sorted_points):
@@ -107,12 +109,10 @@ class TrimKMeans:
         :return:
         """
         self.opt_cutoff_ranges = [None] * self.n_clusters
-        # self.opt_cutoff_ranges is empty for each cluster until a matching entry is popd
-        # if there is no entry in a cluster the entire list will be popd
-        while any(x is None for x in self.opt_cutoff_ranges) and len(sorted_points) > 0:
-            c_p = heapq.heappop(sorted_points)
-            if not self.opt_cutoff_ranges[c_p.cluster]:
-                self.opt_cutoff_ranges[c_p.cluster] = c_p.dist
+
+        for i in range(self.n_clusters):
+            # get max dist per cluster
+            self.opt_cutoff_ranges[i] = min(x.dist for x in sorted_points if x.cluster == i)
 
     def __compare_iterations(self, sorted_points, centroids, run):
         """
