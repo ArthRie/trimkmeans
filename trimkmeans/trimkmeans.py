@@ -17,7 +17,7 @@ def euclidean(point, data):
     Point has dimensions (m,), data has dimensions (n,m), and output will be of size (n,).
     """
     # list conversation to prevent deprecation warning Calling np.sum(generator) is deprecated
-    gen = list((point - data) ** 2)
+    gen = ((point - data) ** 2)
     return np.sqrt(np.sum(gen, axis=1))
 
 
@@ -57,14 +57,16 @@ class TrimKMeans:
         """
         Inner Class used to group points together with the distance and cluster that was calculated by the algorithm
         """
+        # https://stackoverflow.com/questions/53388451/how-to-speed-up-python-instance-initialization-for-millions-of-objects
+        # 107.801 -> 92.025 cumtime for 10000 points
+        __slots__ = ('points', 'cluster', 'dist')
 
-        # legacy constructor left here for testing
         def __init__(self, points=None):
             self.points = points
             self.cluster = None
             self.dist = None
 
-        # enable comparison for heapq
+        # enable comparison for sort
         def __lt__(self, cp2):
             return self.dist < cp2.dist
 
