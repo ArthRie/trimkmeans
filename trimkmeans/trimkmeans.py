@@ -114,7 +114,10 @@ class TrimKMeans:
 
         for i in range(self.n_clusters):
             # get max dist per cluster
-            self.opt_cutoff_ranges[i] = min(x.dist for x in sorted_points if x.cluster == i)
+            try:
+                self.opt_cutoff_ranges[i] = min(x.dist for x in sorted_points if x.cluster == i)
+            except ValueError:
+                self.opt_cutoff_ranges[i] = -1 * inf
 
     def __compare_iterations(self, sorted_points, centroids, run):
         """

@@ -17,5 +17,5 @@ if __name__ == "__main__":
     profiler.enable()
     trimkmeans.fit(X_train)
     profiler.disable()
-    stats = pstats.Stats(profiler).sort_stats('ncalls')
+    stats = pstats.Stats(profiler).sort_stats('tottime')
     stats.print_stats()
