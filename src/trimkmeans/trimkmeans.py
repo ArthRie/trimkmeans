@@ -16,7 +16,7 @@ def euclidean(point, data):
     Euclidean distance between point & data.
     Point has dimensions (m,), data has dimensions (n,m), and output will be of size (n,).
     """
-    # list conversation to prevent deprecation warning Calling np.sum(generator) is deprecated
+    # list conversion to prevent deprecation warning Calling np.sum(generator) is deprecated
     gen = ((point - data) ** 2)
     return np.sqrt(np.sum(gen, axis=1))
 
@@ -191,10 +191,8 @@ class TrimKMeans:
                                  f"an inital centroid ndarray")
             else:
                 # calculation for set centroids, only one iteration
-                # the r documentation warns that the same centroids will be used over and over if runs > 1
-                # however I don't think the implementation actually works like this
-                # if self.n_init > 1:
-                #   warnings.warn("If initial mean vectors are specified, only one run will be calculated")
+                if self.n_init > 1:
+                    warnings.warn("If initial mean vectors are specified, only one run will be calculated")
                 centroids = self.init
 
             # Iterate, adjusting centroids until converged or until passed max_iter

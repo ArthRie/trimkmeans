@@ -6,9 +6,9 @@ import unittest
 
 import numpy as np
 
-from trimkmeans.metrics import trimmed_kmeans_metric_supervised
-from trimkmeans.metrics import trimmed_kmeans_metric_unsupervised
-from trimkmeans.trimkmeans import TrimKMeans
+from src.trimkmeans.metrics import trimmed_kmeans_metric_supervised
+from src.trimkmeans.metrics import trimmed_kmeans_metric_unsupervised
+from src.trimkmeans.trimkmeans import TrimKMeans
 
 
 class TestingTrimKMeans(unittest.TestCase):
@@ -34,9 +34,6 @@ class TestingTrimKMeans(unittest.TestCase):
         heapq.heappush(sorted_points, cp2)
         heapq.heappush(sorted_points, cp3)
         test_data = trimkmeans._TrimKMeans__create_points(x_train, centroids)
-        # self.assertEqual((sorted_points, trimkmeans._TrimKMeans__create_points(x_train, centroids)),
-        #                "Result of method doesn't match expected array")
-        # self.assertEqual(sorted_points[0],test_data[0],"Result of method doesn't match expected array")
         self.assertIsNone(np.testing.assert_array_equal(np.array(sorted_points), np.array(test_data)))
 
     def test_empty_data(self):
@@ -76,7 +73,7 @@ class TestingTrimKMeans(unittest.TestCase):
 
     def test_less_points_then_cluster(self):
         """
-        Tests if a size error is raised which stems from a dataset with fewer points than clusters spezified
+        Tests if a size error is raised which stems from a dataset with fewer points than clusters specified
         :return: None
         """
         trimkmeans = TrimKMeans(n_clusters=4)

@@ -11,7 +11,7 @@ import unittest
 import numpy as np
 from sklearn.datasets import make_blobs
 
-from trimkmeans.trimkmeans import TrimKMeans
+from src.trimkmeans.trimkmeans import TrimKMeans
 
 # run this line before importing any rpy2 modules
 os.environ["R_HOME"] = r"C:\Program Files\R\R-4.2.1"  # change as needed

@@ -4,7 +4,7 @@ import pstats
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 
-from trimkmeans.trimkmeans import TrimKMeans
+from src.trimkmeans.trimkmeans import TrimKMeans
 
 if __name__ == "__main__":
     # Create a dataset of 2D distributions
