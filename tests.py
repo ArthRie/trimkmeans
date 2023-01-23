@@ -1,5 +1,5 @@
 """
-unittests for packaging
+copy of unittests which are automatically run on push by pytest
 """
 import heapq
 import unittest

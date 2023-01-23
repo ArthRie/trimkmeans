@@ -1,9 +1,12 @@
 # trimkmeans
-The trimmed k-means clustering method by Cuesta-Albertos, Gordaliza and Matran (1997). This optimizes the k-means criterion under trimming a portion of the points.
+
+The trimmed k-means clustering method by Cuesta-Albertos, Gordaliza and Matran (1997). This optimizes the k-means
+criterion under trimming a portion of the points.
 
 [![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/PyCQA/pylint)
 
 example usage:
+
 ```python
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -44,5 +47,4 @@ if __name__ == "__main__":
         circle = plt.Circle(centroid, trimkmeans.opt_cutoff_ranges[idx], fill=False, color='r')
         plt.gca().add_patch(circle)
     plt.show()
-
 ```

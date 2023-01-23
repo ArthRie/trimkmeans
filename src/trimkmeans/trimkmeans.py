@@ -142,6 +142,10 @@ class TrimKMeans:
         :param data: list of data points to fit the trimmed kmeans to
         :return:
         """
+        if not isinstance(data, np.ndarray):
+            raise ValueError(
+                "Please convert input data to numpy array"
+            )
         # If input is scalar raise error
         if len(data) == 0:
             raise ValueError(
