@@ -26,4 +26,4 @@ jobs:
         pylint --fail-under=8 $(git ls-files '*.py') 
     - name: Test with pytest
       run: |
-        pytest src/tests/tests.py
+        pytest tests.py
