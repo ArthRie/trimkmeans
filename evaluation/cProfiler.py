@@ -12,7 +12,7 @@ if __name__ == "__main__":
     X_train, true_labels = make_blobs(n_samples=10000, centers=CENTERS, random_state=42)
     X_train = StandardScaler().fit_transform(X_train)
     # Fit centroids to dataset
-    trimkmeans = TrimKMeans(n_clusters=CENTERS, verbose=1)
+    trimkmeans = TrimKMeans(n_clusters=CENTERS, verbose=1, n_init=5)
     profiler = cProfile.Profile()
     profiler.enable()
     trimkmeans.fit(X_train)

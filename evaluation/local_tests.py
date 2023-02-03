@@ -41,7 +41,7 @@ class LocalTests(unittest.TestCase):
                                                           centers=3,
                                                           random_state=42,
                                                           return_centers=True)
-        trimkmeans = TrimKMeans(n_clusters=3, n_init=10, init=make_blob_centers)
+        trimkmeans = TrimKMeans(n_clusters=3, n_init=1, init=make_blob_centers)
         trimkmeans.fit(make_blob_data)
         py_labels = trimkmeans.predict(make_blob_data)
         trimcluster = importr('trimcluster')
@@ -55,7 +55,7 @@ class LocalTests(unittest.TestCase):
             # will use our numpy converter whenever objects are
             # passed to R or are returned by R while calling
             # rpy2.robjects functions.
-            tkm1 = trimcluster.trimkmeans(data=make_blob_data, k=3, trim=0.1, runs=10, points=make_blob_centers)
+            tkm1 = trimcluster.trimkmeans(data=make_blob_data, k=3, trim=0.1, runs=1, points=make_blob_centers)
             r_labels = tkm1['classification']
         # r labels are indexed at 1 so this is adjusted for comparison
         adjusted_py_labels = np.array(py_labels) + 1

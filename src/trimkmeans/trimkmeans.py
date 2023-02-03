@@ -119,17 +119,18 @@ class TrimKMeans:
             except ValueError:
                 self.opt_cutoff_ranges[i] = -1 * inf
 
-    def __compare_iterations(self, sorted_points, centroids, run):
+    def __compare_runs(self, sorted_points, centroids, run):
         """
-        Encapsulates the comparison between the different results of two iterations of trimmed_kmeans
-        :param sorted_points: heapq of ClusterPoints
+        Encapsulates the comparison between the different results
+         of two runs of trimmed_kmeans
+        :param sorted_points: np.array of ClusterPoints
         :param centroids: centroids of the clusters
         :param run: number of iteration for verbose printing
         """
         # calculate the sum of all the distances
         new_crit_val = sum((c_p.dist for c_p in sorted_points))
         if self.verbose >= 1:
-            print(f"Iteration {run} criterion value {new_crit_val}")
+            print(f"Run {run} criterion value {new_crit_val}")
         if new_crit_val > self.crit_val:
             self.__calculate_cutoff(sorted_points)
             self.crit_val = new_crit_val
@@ -197,19 +198,17 @@ class TrimKMeans:
                 # calculation for set centroids, only one iteration
                 if self.n_init > 1:
                     warnings.warn("If initial mean vectors are specified, only one run will be calculated")
-                centroids = self.init
+                centroids = self.init.copy()
 
             # Iterate, adjusting centroids until converged or until passed max_iter
             iteration = 0
             prev_centroids = None
-            # heapq for points
             sorted_points = []
             while np.not_equal(centroids, prev_centroids).any() and iteration < self.max_iter:
-
                 sorted_points = self.__create_points(x_train, centroids)
                 # Push current centroids to previous, reassign centroids as mean of the points belonging to them
                 # copy list by value[:]
-                prev_centroids = centroids[:]
+                prev_centroids = centroids.copy()
                 for i in range(self.n_clusters):
                     with warnings.catch_warnings():
                         # clusters can be empty, the corresponding RuntimeWarning is suppressed here
@@ -220,8 +219,10 @@ class TrimKMeans:
                     if np.isnan(centroid).any():  # Catch any np.nans, resulting from a centroid having no points
                         centroids[i] = prev_centroids[i]
                 iteration += 1
+            if self.verbose >= 1:
+                print(f"itertions in run {run}: {iteration}")
 
-            self.__compare_iterations(sorted_points, centroids, run)
+            self.__compare_runs(sorted_points, centroids, run)
 
     def predict(self, X):
         """
